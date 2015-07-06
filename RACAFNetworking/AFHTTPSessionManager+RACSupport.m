@@ -11,6 +11,7 @@
 #import "AFHTTPSessionManager+RACSupport.h"
 
 NSString *const RACAFNResponseObjectErrorKey = @"responseObject";
+NSString *const RACAFNResponseErrorKey = @"response";
 
 @implementation AFHTTPSessionManager (RACSupport)
 
@@ -36,10 +37,13 @@ NSString *const RACAFNResponseObjectErrorKey = @"responseObject";
 		NSURLSessionDataTask *task = [self dataTaskWithRequest:request completionHandler:^(NSURLResponse *response, id responseObject, NSError *error) {
 			if (error) {
 				NSMutableDictionary *userInfo = [error.userInfo mutableCopy];
-        			if (responseObject) {
+                if (responseObject) {
 					userInfo[RACAFNResponseObjectErrorKey] = responseObject;
-          			}
-        			NSError *errorWithRes = [NSError errorWithDomain:error.domain code:error.code userInfo:[userInfo copy]];
+                }
+				if (response) {
+					userInfo[RACAFNResponseErrorKey] = response;
+                }
+                NSError *errorWithRes = [NSError errorWithDomain:error.domain code:error.code userInfo:[userInfo copy]];
 				[subscriber sendError:errorWithRes];
 			} else {
 				[subscriber sendNext:RACTuplePack(responseObject, response)];
@@ -80,6 +84,9 @@ NSString *const RACAFNResponseObjectErrorKey = @"responseObject";
 				if (responseObject) {
 					userInfo[RACAFNResponseObjectErrorKey] = responseObject;
 				}
+				if (response) {
+					userInfo[RACAFNResponseErrorKey] = response;
+                }
 				NSError *errorWithRes = [NSError errorWithDomain:error.domain code:error.code userInfo:[userInfo copy]];
 				[subscriber sendError:errorWithRes];
 			} else {
